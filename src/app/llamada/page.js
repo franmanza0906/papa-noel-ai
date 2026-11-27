@@ -354,6 +354,24 @@ function ContenidoLlamada() {
     window.open(`https://wa.me/?text=${texto}`, "_blank");
   };
 
+  // Menú nativo de compartir del celu (TikTok, Instagram, WhatsApp...). Si no existe, copia el link.
+  const compartirEnRedes = async () => {
+    const url = window.location.origin;
+    const texto =
+      "¡Papá Noel llamó en vivo a mi hijo y sabía todos sus secretos! 🎅 Probalo gratis:";
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Papá Noel en Vivo", text: texto, url });
+        return;
+      }
+      await navigator.clipboard.writeText(`${texto} ${url}`);
+      setLinkCopiado(true);
+      setTimeout(() => setLinkCopiado(false), 2500);
+    } catch {
+      // El usuario canceló o el navegador no lo permite
+    }
+  };
+
   const segundosRestantes = Math.max(0, duracionMaxima - segundosTranscurridos);
 
   // POST-LLAMADA CÁLIDA
@@ -393,6 +411,16 @@ function ContenidoLlamada() {
             >
               Compartir con otra familia por WhatsApp
             </button>
+
+            <button
+              onClick={compartirEnRedes}
+              className="min-h-[48px] w-full cursor-pointer touch-manipulation rounded-2xl border border-[#163829] bg-white px-5 py-3.5 text-sm font-bold text-[#163829] transition hover:bg-[#F4F8F5]"
+            >
+              {linkCopiado ? "¡Link copiado!" : "Compartir en TikTok, Instagram o donde quieras"}
+            </button>
+            <p className="text-xs leading-relaxed text-[#6B655E]">
+              ¿Grabaste la reacción? Subila con #PapaNoelEnVivo 🎥
+            </p>
 
             <button
               onClick={() => router.push("/")}
