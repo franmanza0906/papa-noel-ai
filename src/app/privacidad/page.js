@@ -23,6 +23,11 @@ const SECCIONES = [
       "Para que las llamadas gratis alcancen para todos, registramos un identificador anónimo del dispositivo, la dirección de red y la hora de cada llamada. No registramos nombres ni secretos.",
   },
   {
+    titulo: "Pagos",
+    texto:
+      "Si comprás un pack, el pago lo procesa Mercado Pago: nosotros nunca vemos los datos de tu tarjeta. Solo guardamos el código del pack, cuántas llamadas le quedan, el número de operación y el monto.",
+  },
+  {
     titulo: "Estadísticas",
     texto:
       "Usamos Vercel Analytics para saber cuántas personas visitan la página. No usa cookies ni identifica a nadie.",

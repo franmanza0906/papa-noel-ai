@@ -14,6 +14,62 @@ function obtenerInicioHoyArgentinaISO() {
   return new Date(ahoraArg.getTime() + 3 * 60 * 60 * 1000).toISOString();
 }
 
+async function pedirUrlFirmada(apiKey, agentId) {
+  const response = await fetch(
+    `https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${agentId}`,
+    {
+      method: "GET",
+      headers: { "xi-api-key": apiKey },
+      cache: "no-store",
+    }
+  );
+  if (!response.ok) {
+    console.error("Error ElevenLabs:", await response.text());
+    return null;
+  }
+  const data = await response.json();
+  return data.signed_url || null;
+}
+
+// Llamada con un código de pase pago: descuenta una llamada del pase
+async function iniciarConPase(supabase, codigo, apiKey, agentId) {
+  const { data, error } = await supabase.rpc("usar_pase", { p_codigo: codigo });
+  const pase = Array.isArray(data) ? data[0] : data;
+
+  if (error) {
+    console.error("Error usando pase:", error);
+    return NextResponse.json(
+      { error: "No pudimos validar tu código. Intentá de nuevo." },
+      { status: 500 }
+    );
+  }
+  if (!pase) {
+    return NextResponse.json(
+      {
+        error: "Ese código no existe o ya usó todas sus llamadas.",
+        codigo: "PASE_INVALIDO",
+      },
+      { status: 403 }
+    );
+  }
+
+  const signedUrl = await pedirUrlFirmada(apiKey, agentId);
+  if (!signedUrl) {
+    // Devolvemos la llamada al pase
+    await supabase.rpc("devolver_pase", { p_codigo: codigo });
+    return NextResponse.json(
+      { error: "No se pudo conectar con el Polo Norte en este momento." },
+      { status: 502 }
+    );
+  }
+
+  return NextResponse.json({
+    signedUrl,
+    duracionMaximaSegundos: Math.min(pase.duracion_segundos || 90, 95),
+    llamadasRestantes: pase.llamadas_restantes,
+  });
+}
+
 export async function POST(request) {
   let reservaId = null;
   const supabase = getSupabaseAdmin();
@@ -30,12 +86,21 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { nombre, edad, deviceId } = body || {};
+    const { nombre, edad, deviceId, codigo } = body || {};
 
     if (!nombre || !edad) {
       return NextResponse.json(
         { error: "Faltan datos obligatorios del chico." },
         { status: 400 }
+      );
+    }
+
+    if (typeof codigo === "string" && codigo.trim()) {
+      return await iniciarConPase(
+        supabase,
+        codigo.trim().toUpperCase().slice(0, 20),
+        apiKey,
+        agentId
       );
     }
 
@@ -77,6 +142,7 @@ export async function POST(request) {
         {
           error:
             "¡Papá Noel está muy ocupado envolviendo regalos ahora mismo! Se agotaron los cupos gratuitos de hoy.",
+          codigo: "SIN_CUPO",
         },
         { status: 429 }
       );
@@ -97,6 +163,7 @@ export async function POST(request) {
         {
           error:
             "Se alcanzó el límite de llamadas desde esta red por hoy. Probá mañana nuevamente.",
+          codigo: "SIN_CUPO",
         },
         { status: 429 }
       );
@@ -105,32 +172,19 @@ export async function POST(request) {
     reservaId = reserva.id;
 
     // 2. Pedir URL firmada a ElevenLabs
-    const response = await fetch(
-      `https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${agentId}`,
-      {
-        method: "GET",
-        headers: { "xi-api-key": apiKey },
-        cache: "no-store",
-      }
-    );
+    const signedUrl = await pedirUrlFirmada(apiKey, agentId);
 
-    if (!response.ok) {
-      const detalle = await response.text();
-      console.error("Error ElevenLabs:", detalle);
+    if (!signedUrl) {
       // Si ElevenLabs falló, devolvemos el cupo reservado
-      if (reservaId) {
-        await supabase.from("llamadas_gratis").delete().eq("id", reservaId);
-      }
+      await supabase.from("llamadas_gratis").delete().eq("id", reservaId);
       return NextResponse.json(
         { error: "No se pudo conectar con el Polo Norte en este momento." },
         { status: 502 }
       );
     }
 
-    const data = await response.json();
-
     return NextResponse.json({
-      signedUrl: data.signed_url,
+      signedUrl,
       duracionMaximaSegundos: DURACION_MAXIMA_SEGUNDOS,
     });
   } catch (error) {

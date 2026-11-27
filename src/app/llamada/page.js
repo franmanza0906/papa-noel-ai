@@ -91,6 +91,8 @@ function ContenidoLlamada() {
   const [horaActual, setHoraActual] = useState("");
   const [esNavegadorInterno, setEsNavegadorInterno] = useState(false);
   const [linkCopiado, setLinkCopiado] = useState(false);
+  const [ofrecerPacks, setOfrecerPacks] = useState(false);
+  const [llamadasRestantes, setLlamadasRestantes] = useState(null);
 
   const inicioLlamadaRef = useRef(null);
   const avisoDespedidaEnviadoRef = useRef(false);
@@ -275,18 +277,25 @@ function ContenidoLlamada() {
           nombre: datos.nombre,
           edad: datos.edad,
           deviceId,
+          codigo: datos.codigo || undefined,
         }),
       });
 
       const data = await res.json();
 
       if (!res.ok || !data.signedUrl) {
+        setOfrecerPacks(
+          ["LIMITE_GRATIS", "SIN_CUPO", "PASE_INVALIDO"].includes(data.codigo)
+        );
         throw new Error(
           data.error || "No se pudo establecer conexión con el Polo Norte."
         );
       }
 
       setDuracionMaxima(data.duracionMaximaSegundos || 90);
+      if (typeof data.llamadasRestantes === "number") {
+        setLlamadasRestantes(data.llamadasRestantes);
+      }
 
       const mapaTrato = {
         nino: "Nene / Campeón (trato masculino)",
@@ -362,6 +371,13 @@ function ContenidoLlamada() {
             Papá Noel volvió al taller con los duendes. Los datos del formulario
             ya se limpiaron de tu navegador.
           </p>
+          {llamadasRestantes !== null && (
+            <p className="mt-3 rounded-xl bg-[#F4F8F5] px-3.5 py-2.5 text-sm font-semibold text-[#163829]">
+              {llamadasRestantes > 0
+                ? `Te ${llamadasRestantes === 1 ? "queda 1 llamada" : `quedan ${llamadasRestantes} llamadas`} con tu código ${datos?.codigo}.`
+                : "Usaste todas las llamadas de tu código."}
+            </p>
+          )}
 
           <div className="mt-7 space-y-3">
             <button
@@ -664,6 +680,14 @@ function ContenidoLlamada() {
                     {linkCopiado
                       ? "¡Link copiado! Pegalo en Chrome o Safari"
                       : "Copiar link para abrir en Chrome / Safari"}
+                  </button>
+                )}
+                {ofrecerPacks && (
+                  <button
+                    onClick={() => router.push("/packs")}
+                    className="min-h-[50px] w-full cursor-pointer touch-manipulation rounded-2xl bg-[#163829] px-5 py-3.5 text-sm font-bold text-white transition"
+                  >
+                    Ver packs de llamadas
                   </button>
                 )}
                 <button
