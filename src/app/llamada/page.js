@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useConversation, ConversationProvider } from "@elevenlabs/react";
+import EncuestaFeedback from "./EncuestaFeedback";
 
 const COPOS = [
   { left: "8%", size: 4, dur: "11s", delay: "0s" },
@@ -378,6 +379,12 @@ function ContenidoLlamada() {
                 : "Usaste todas las llamadas de tu código."}
             </p>
           )}
+
+          <EncuestaFeedback
+            edad={datos?.edad}
+            acento={datos?.estilo}
+            conCodigo={Boolean(datos?.codigo)}
+          />
 
           <div className="mt-7 space-y-3">
             <button
