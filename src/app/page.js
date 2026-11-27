@@ -4,6 +4,13 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import SeccionesInfo from "./SeccionesInfo";
+import { PACKS, formatearPrecio } from "@/lib/packs";
+
+// Precio de referencia del cartel: lo que sale cada llamada en el pack más chico
+const PACK_REFERENCIA = PACKS[0];
+const PRECIO_POR_LLAMADA = Math.round(
+  PACK_REFERENCIA.precioARS / PACK_REFERENCIA.llamadas
+);
 
 const COPOS = [
   { left: "6%", size: 4, dur: "12s", delay: "0s" },
@@ -186,9 +193,18 @@ export default function HomePage() {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#F3CA7A]">
             Papá Noel en Vivo
           </p>
-          <p className="mt-3 rounded-full bg-[#9E1B24] px-3.5 py-1 text-xs font-bold uppercase tracking-wide text-white shadow">
-            Gratis por tiempo limitado
-          </p>
+          <div className="mt-3 flex flex-col items-center">
+            <p className="flex items-center gap-2 rounded-full bg-[#9E1B24] px-3.5 py-1 text-xs font-bold uppercase tracking-wide text-white shadow">
+              <span className="font-semibold normal-case text-white/70 line-through decoration-2">
+                {formatearPrecio(PRECIO_POR_LLAMADA)}
+              </span>
+              Gratis por tiempo limitado
+            </p>
+            <p className="mt-1 text-[11px] text-white/60">
+              Precio por llamada en el {PACK_REFERENCIA.nombre} ({PACK_REFERENCIA.llamadas} por{" "}
+              {formatearPrecio(PACK_REFERENCIA.precioARS)})
+            </p>
+          </div>
           {diasNavidad !== null && (
             <p className="mt-2 rounded-full border border-[#F3CA7A]/40 bg-[#F3CA7A]/10 px-3 py-1 text-xs font-semibold text-[#F3CA7A]">
               {diasNavidad === 0
