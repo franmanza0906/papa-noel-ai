@@ -34,9 +34,9 @@ export const metadata = {
     siteName: "Papá Noel en Vivo",
     images: [
       {
-        url: "/papa-noel.webp",
-        width: 800,
-        height: 800,
+        url: "/og.png",
+        width: 1200,
+        height: 630,
         alt: "Papá Noel en Vivo desde el Polo Norte",
       },
     ],
@@ -48,7 +48,7 @@ export const metadata = {
     title: "Papá Noel en Vivo 🎅",
     description:
       "Llamada interactiva en tiempo real con un Papá Noel argentino que sabe los secretos de tus hijos. Gratis y directo desde el celu.",
-    images: ["/papa-noel.webp"],
+    images: ["/og.png"],
   },
 };
 export default function RootLayout({ children }) {
