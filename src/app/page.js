@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import SeccionesInfo from "./SeccionesInfo";
 
 const COPOS = [
   { left: "6%", size: 4, dur: "12s", delay: "0s" },
@@ -12,6 +14,16 @@ const COPOS = [
   { left: "83%", size: 5, dur: "16s", delay: "0.5s" },
   { left: "94%", size: 3, dur: "13s", delay: "2.5s" },
 ];
+
+// Cuenta regresiva a Navidad: se calcula solo en el navegador (en el servidor devuelve null)
+const suscribirNada = () => () => {};
+function calcularDiasNavidad() {
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  let navidad = new Date(hoy.getFullYear(), 11, 25);
+  if (hoy > navidad) navidad = new Date(hoy.getFullYear() + 1, 11, 25);
+  return Math.round((navidad - hoy) / 86400000);
+}
 
 const CLASE_INPUT =
   "w-full rounded-2xl border border-[#D6CBB8] bg-[#FAF6EF]/60 px-4 py-3 text-base text-[#1C1917] placeholder:text-[#6B655E] focus:border-[#163829] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#163829]/15 transition";
@@ -26,7 +38,12 @@ export default function HomePage() {
   const [logro, setLogro] = useState("");
   const [detalleExtra, setDetalleExtra] = useState("");
   const [notaPadres, setNotaPadres] = useState("");
-  const [mostrarSecretos, setMostrarSecretos] = useState(false);
+  const [mostrarSecretos, setMostrarSecretos] = useState(true);
+  const diasNavidad = useSyncExternalStore(
+    suscribirNada,
+    calcularDiasNavidad,
+    () => null
+  );
 
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
@@ -116,6 +133,15 @@ export default function HomePage() {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#F3CA7A]">
             Papá Noel en Vivo
           </p>
+          {diasNavidad !== null && (
+            <p className="mt-2 rounded-full border border-[#F3CA7A]/40 bg-[#F3CA7A]/10 px-3 py-1 text-xs font-semibold text-[#F3CA7A]">
+              {diasNavidad === 0
+                ? "¡Hoy es Navidad!"
+                : diasNavidad === 1
+                ? "¡Mañana es Navidad!"
+                : `Faltan ${diasNavidad} días para Navidad`}
+            </p>
+          )}
           <h1 className="mt-2 font-serif text-3xl font-semibold leading-tight sm:text-4xl">
             Hacé que Papá Noel llame a tus hijos en vivo
           </h1>
@@ -143,7 +169,7 @@ export default function HomePage() {
       </section>
 
       {/* Formulario principal */}
-      <section className="relative z-20 mx-auto -mt-10 max-w-md px-4 pb-12">
+      <section id="formulario" className="relative z-20 mx-auto -mt-10 max-w-md scroll-mt-4 px-4 pb-12">
         <form
           onSubmit={manejarInicio}
           className="rounded-[28px] border border-[#E5DBC9] bg-white p-6 shadow-[0_20px_50px_-24px_rgba(22,56,41,0.22)] sm:p-7"
@@ -232,8 +258,8 @@ export default function HomePage() {
               </span>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { id: "argentino", label: "Argentino 🇦🇷" },
-                  { id: "neutro", label: "Latino neutro" },
+                  { id: "argentino", label: "Argentino (vos)" },
+                  { id: "neutro", label: "Latino neutro (tú)" },
                 ].map((op) => (
                   <button
                     key={op.id}
@@ -261,7 +287,7 @@ export default function HomePage() {
                 <span>
                   {mostrarSecretos
                     ? "Ocultar secretos"
-                    : "+ Agregar secretos para sorprenderlo (opcional)"}
+                    : "+ Secretos para sorprenderlo (opcional)"}
                 </span>
                 <span className="text-lg leading-none">
                   {mostrarSecretos ? "−" : "+"}
@@ -270,6 +296,10 @@ export default function HomePage() {
 
               {mostrarSecretos && (
                 <div className="mt-4 space-y-4 border-t border-[#ECE4D5] pt-4">
+                  <p className="text-xs leading-relaxed text-[#57534E]">
+                    Esto es lo que hace la magia: Papá Noel lo menciona como si
+                    lo hubiera leído en su cuaderno. Con uno solo ya alcanza.
+                  </p>
                   <div>
                     <label
                       htmlFor="logro"
@@ -353,10 +383,22 @@ export default function HomePage() {
 
           <p className="mt-4 text-center text-xs text-[#57534E]">
             Experiencia interactiva con voz de inteligencia artificial. Sin
-            cámara y sin registro.
+            cámara y sin registro. Tip: subí el volumen y buscá un lugar
+            tranquilo.
           </p>
         </form>
       </section>
+
+      <SeccionesInfo />
+
+      <footer className="border-t border-[#E5DBC9] px-4 py-8 text-center text-xs text-[#57534E]">
+        <p>Papá Noel en Vivo · Hecho con cariño en Argentina</p>
+        <p className="mt-2">
+          <Link href="/privacidad" className="underline underline-offset-2 hover:text-[#163829]">
+            Privacidad y seguridad
+          </Link>
+        </p>
+      </footer>
     </main>
   );
 }
