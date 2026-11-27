@@ -28,6 +28,11 @@ const SECCIONES = [
       "Si comprás un pack, el pago lo procesa Mercado Pago: nosotros nunca vemos los datos de tu tarjeta. Solo guardamos el código del pack, cuántas llamadas le quedan, el número de operación y el monto.",
   },
   {
+    titulo: "Opiniones",
+    texto:
+      "Al terminar la llamada podés dejarnos tu opinión. Guardamos la puntuación, el comentario, la edad cargada y el acento elegido, nunca el nombre. Solo mostramos un comentario en la web si marcaste que podemos hacerlo.",
+  },
+  {
     titulo: "Estadísticas",
     texto:
       "Usamos Vercel Analytics para saber cuántas personas visitan la página. No usa cookies ni identifica a nadie.",
