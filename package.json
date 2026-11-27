@@ -12,6 +12,7 @@
     "@elevenlabs/react": "^1.24.0",
     "@supabase/supabase-js": "^2.119.2",
     "@vercel/analytics": "^2.0.1",
+    "mercadopago": "^3.6.2",
     "next": "16.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0"

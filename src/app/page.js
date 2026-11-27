@@ -45,12 +45,40 @@ export default function HomePage() {
     () => null
   );
 
+  const [codigo, setCodigo] = useState("");
+  const [mostrarCodigo, setMostrarCodigo] = useState(false);
+  const [pagosActivos, setPagosActivos] = useState(false);
+
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     router.prefetch("/llamada");
   }, [router]);
+
+  // Código guardado de una compra anterior + si los packs están a la venta
+  useEffect(() => {
+    let cancelado = false;
+    try {
+      const guardado = localStorage.getItem("papaNoelCodigo");
+      if (guardado) {
+        Promise.resolve().then(() => {
+          if (cancelado) return;
+          setCodigo(guardado);
+          setMostrarCodigo(true);
+        });
+      }
+    } catch {
+      // Sin almacenamiento local
+    }
+    fetch("/api/packs")
+      .then((r) => r.json())
+      .then((d) => !cancelado && setPagosActivos(Boolean(d.activos)))
+      .catch(() => {});
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
   const manejarInicio = async (e) => {
     e.preventDefault();
@@ -69,6 +97,30 @@ export default function HomePage() {
     }
 
     setCargando(true);
+
+    const codigoLimpio = codigo.trim().toUpperCase();
+    if (codigoLimpio) {
+      try {
+        const res = await fetch(
+          `/api/verificar-pase?codigo=${encodeURIComponent(codigoLimpio)}`
+        );
+        const pase = await res.json();
+        if (!pase.valido) {
+          setError(pase.error || "Ese código no es válido.");
+          setCargando(false);
+          return;
+        }
+        try {
+          localStorage.setItem("papaNoelCodigo", codigoLimpio);
+        } catch {
+          // Sin almacenamiento local
+        }
+      } catch {
+        setError("No pudimos verificar el código. Intentá de nuevo.");
+        setCargando(false);
+        return;
+      }
+    }
 
     // Pedimos permiso de micrófono ahora (el adulto) y liberamos el stream al instante
     try {
@@ -90,6 +142,7 @@ export default function HomePage() {
       logro: logro.trim().slice(0, 140),
       detalleExtra: detalleExtra.trim().slice(0, 140),
       notaPadres: notaPadres.trim().slice(0, 140),
+      codigo: codigoLimpio || undefined,
     };
 
     try {
@@ -132,6 +185,9 @@ export default function HomePage() {
 
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#F3CA7A]">
             Papá Noel en Vivo
+          </p>
+          <p className="mt-3 rounded-full bg-[#9E1B24] px-3.5 py-1 text-xs font-bold uppercase tracking-wide text-white shadow">
+            Gratis por tiempo limitado
           </p>
           {diasNavidad !== null && (
             <p className="mt-2 rounded-full border border-[#F3CA7A]/40 bg-[#F3CA7A]/10 px-3 py-1 text-xs font-semibold text-[#F3CA7A]">
@@ -367,6 +423,40 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Código de pack pago */}
+          <div className="mt-4">
+            {!mostrarCodigo ? (
+              <button
+                type="button"
+                onClick={() => setMostrarCodigo(true)}
+                className="cursor-pointer text-sm font-semibold text-[#163829] underline underline-offset-2"
+              >
+                Tengo un código de pack
+              </button>
+            ) : (
+              <div>
+                <label
+                  htmlFor="codigo"
+                  className="mb-1.5 block text-sm font-semibold text-[#1C1917]"
+                >
+                  Código de pack{" "}
+                  <span className="font-normal text-[#57534E]">(opcional)</span>
+                </label>
+                <input
+                  id="codigo"
+                  type="text"
+                  autoCapitalize="characters"
+                  autoComplete="off"
+                  maxLength={20}
+                  value={codigo}
+                  onChange={(e) => setCodigo(e.target.value.toUpperCase())}
+                  placeholder="NOEL-XXXX-XXXX"
+                  className={CLASE_INPUT}
+                />
+              </div>
+            )}
+          </div>
+
           {error && (
             <p className="mt-4 rounded-xl bg-red-50 px-3.5 py-2.5 text-sm font-medium text-[#9E1B24]">
               {error}
@@ -386,6 +476,14 @@ export default function HomePage() {
             cámara y sin registro. Tip: subí el volumen y buscá un lugar
             tranquilo.
           </p>
+          {pagosActivos && (
+            <p className="mt-2 text-center text-xs text-[#57534E]">
+              ¿Querés más llamadas?{" "}
+              <Link href="/packs" className="font-semibold text-[#163829] underline underline-offset-2">
+                Mirá los packs
+              </Link>
+            </p>
+          )}
         </form>
       </section>
 
@@ -393,7 +491,12 @@ export default function HomePage() {
 
       <footer className="border-t border-[#E5DBC9] px-4 py-8 text-center text-xs text-[#57534E]">
         <p>Papá Noel en Vivo · Hecho con cariño en Argentina</p>
-        <p className="mt-2">
+        <p className="mt-2 space-x-3">
+          {pagosActivos && (
+            <Link href="/packs" className="underline underline-offset-2 hover:text-[#163829]">
+              Packs de llamadas
+            </Link>
+          )}
           <Link href="/privacidad" className="underline underline-offset-2 hover:text-[#163829]">
             Privacidad y seguridad
           </Link>

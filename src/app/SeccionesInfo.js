@@ -32,7 +32,7 @@ const EJEMPLO = [
 const PREGUNTAS = [
   {
     p: "¿Es gratis?",
-    r: "Sí. Cada celular tiene 2 llamadas gratis. Como la voz con IA tiene un costo, hay un cupo diario: si se agota, probá de nuevo al día siguiente.",
+    r: "Por tiempo limitado, sí: cada celular tiene 2 llamadas gratis. Como la voz con IA tiene un costo, hay un cupo diario: si se agota, probá de nuevo al día siguiente. Si querés más llamadas, pronto vas a poder comprar un pack.",
   },
   {
     p: "¿Funciona en iPhone y Android?",
