@@ -489,8 +489,9 @@ export default function HomePage() {
 
           <p className="mt-4 text-center text-xs text-[#57534E]">
             Experiencia interactiva con voz de inteligencia artificial. Sin
-            cámara y sin registro. Tip: subí el volumen y buscá un lugar
-            tranquilo.
+            cámara y sin registro. Tip: subí el volumen, buscá un lugar
+            tranquilo y grabá su reacción con otro celu: ¡es un recuerdo
+            único!
           </p>
           {pagosActivos && (
             <p className="mt-2 text-center text-xs text-[#57534E]">

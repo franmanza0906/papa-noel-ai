@@ -23,9 +23,9 @@ export const viewport = {
 
 export const metadata = {
   metadataBase: new URL("https://papa-noel-ai.vercel.app"),
-  title: "Papá Noel en Vivo · Llamada mágica con IA",
+  title: "Llamada de Papá Noel en vivo para tus hijos · Gratis y sin app",
   description:
-    "Cargás sus secretos en segundos y Papá Noel llama en vivo a tus hijos con acento argentino. Gratis, sin cámara y sin descargar nada.",
+    "Tus hijos hablan con Papá Noel en una llamada real por voz: sabe su nombre y sus secretos, y habla con acento argentino. Gratis, desde el celu y sin descargar ninguna app.",
   openGraph: {
     title: "Papá Noel en Vivo 🎅",
     description:
