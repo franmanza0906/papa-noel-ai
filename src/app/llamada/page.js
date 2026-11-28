@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useConversation, ConversationProvider } from "@elevenlabs/react";
 import EncuestaFeedback from "./EncuestaFeedback";
+import CertificadoNinoBueno from "./CertificadoNinoBueno";
 
 const COPOS = [
   { left: "8%", size: 4, dur: "11s", delay: "0s" },
@@ -397,6 +398,8 @@ function ContenidoLlamada() {
                 : "Usaste todas las llamadas de tu código."}
             </p>
           )}
+
+          <CertificadoNinoBueno nombre={datos?.nombre} genero={datos?.genero} />
 
           <EncuestaFeedback
             edad={datos?.edad}
